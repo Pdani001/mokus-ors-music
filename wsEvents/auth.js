@@ -2,7 +2,7 @@ const db = require("../connection.js");
 const { CurrentDate } = require('../util.js');
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
-const Global = require("../global.js");
+const { Global, User } = require("../global.js");
 
 module.exports = {
 	name: "auth",
@@ -26,6 +26,9 @@ module.exports = {
             iss: "mokus.pghost.org",
             sub: rows[0]['id']
         }, key);
+        const user = Global.Users.get(rows[0]['id']) || new User(rows[0]['id'],rows[0]['name'],rows[0]['user'],BigInt(rows[0]['permission']));
+        user.Permissions = BigInt(rows[0]['permission']);
+        Global.Users.set(rows[0]['id'],user);
         ws.send(JSON.stringify({"token":token,"expiresAt":0}));
         return true;
 	},

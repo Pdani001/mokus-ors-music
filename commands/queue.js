@@ -3,7 +3,7 @@ const { useMasterPlayer, QueryType } = require("discord-player");
 const WSPermissions = require('../perms.js');
 const db = require("../connection.js");
 const { CurrentDate } = require('../util.js');
-const Global = require("../global.js");
+const { Global } = require("../global.js");
 
 module.exports = {
 	data: new SlashCommandBuilder()

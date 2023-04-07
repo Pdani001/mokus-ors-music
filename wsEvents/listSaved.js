@@ -1,6 +1,6 @@
 const db = require("../connection.js");
 const { CurrentDate } = require('../util.js');
-const Global = require("../global.js");
+const { Global } = require("../global.js");
 const jwt = require('jsonwebtoken');
 
 module.exports = {
@@ -12,8 +12,7 @@ module.exports = {
         try {
             const payload = jwt.verify(ws.auth,key);
             const user = payload.sub;
-            const [rows] = await db.execute("SELECT * FROM `music_users` WHERE `id`=?",[user || ""]);
-            if(rows.length == 0){
+            if(Global.Users.get(user) == undefined){
                 ws.send(JSON.stringify({"error":"Invalid authentication"}));
                 return false;
             }

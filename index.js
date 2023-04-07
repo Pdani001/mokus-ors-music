@@ -11,7 +11,7 @@ const perms = require('./perms.js');
 const { Player } = require('discord-player');
 const player = Player.singleton(client);
 const { WebSocketServer } = require("ws");
-const Global = require("./global.js");
+const { Global } = require("./global.js");
 
 const express = require("express");
 const web = express();

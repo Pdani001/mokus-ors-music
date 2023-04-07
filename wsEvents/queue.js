@@ -2,7 +2,7 @@ const db = require("../connection.js");
 const { CurrentDate } = require('../util.js');
 const { useMasterPlayer } = require("discord-player");
 const WSPermissions = require('../perms.js');
-const Global = require("../global.js");
+const { Global } = require("../global.js");
 const jwt = require('jsonwebtoken');
 
 module.exports = {
@@ -13,14 +13,13 @@ module.exports = {
 
         try {
             const payload = jwt.verify(ws.auth,key);
-            const user = payload.sub;
-            const [rows] = await db.execute("SELECT * FROM `music_users` WHERE `id`=?",[user || ""]);
-            if(rows.length == 0){
+            const UserID = payload.sub;
+            const User = Global.Users.get(UserID);
+            if(User == undefined){
                 ws.send(JSON.stringify({"error":"Invalid authentication."}));
                 return false;
             }
-            const permissions = BigInt(rows[0]['permission']);
-            if(WSPermissions.hasPermission(permissions,WSPermissions.Play)){
+            if(WSPermissions.hasPermission(User.Permissions,WSPermissions.Play)){
                 if(Global.Queue != null){
                     if(data.remove != undefined){
                         if(data.remove == "all"){
@@ -38,18 +37,32 @@ module.exports = {
                     }
                 }
                 if(data.add != undefined){
-                    const results = await useMasterPlayer().search(data.add);
                     const channel = Global.Queue != null ? Global.Queue.channel : data.channel || null;
                     if(channel == null){
                         ws.send(JSON.stringify({"event": "listChannels"}));
                         return false;
                     }
-                    await useMasterPlayer().play(channel, results, {
-                        nodeOptions: {
-                            volume: Global.Volume,
-                            repeatMode: Global.RepeatMode
+                    if(!Array.isArray(data.add)){
+                        const results = await useMasterPlayer().search(data.add);
+                        await useMasterPlayer().play(channel, results, {
+                            nodeOptions: {
+                                volume: Global.Volume,
+                                repeatMode: Global.RepeatMode
+                            }
+                        });
+                    } else {
+                        const tracks = [];
+                        for(let i = 0; i < data.add.length; i++){
+                            const results = await useMasterPlayer().search(data.add[i]);
+                            tracks.push(...results.tracks);
                         }
-                    });
+                        await useMasterPlayer().play(channel, tracks, {
+                            nodeOptions: {
+                                volume: Global.Volume,
+                                repeatMode: Global.RepeatMode
+                            }
+                        });
+                    }
                 }
             } else {
                 ws.send(JSON.stringify({"error":"You do not have permission to do this"}));

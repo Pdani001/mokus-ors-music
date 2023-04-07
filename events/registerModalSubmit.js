@@ -17,10 +17,6 @@ module.exports = {
         await interaction.deferReply({ephemeral: true});
 
         const userID = interaction.member.id;
-        let [rows] = await db.execute("SELECT * FROM `music_users` WHERE `user`=?",[userID]);
-        if(rows.length != 0){
-            return interaction.followUp({content:`You already have an account!`, ephemeral: true});
-        }
 
 		let perms = 0n;
         if(interaction.member.permissions.has(PermissionsBitField.Flags.ModerateMembers,false)){

@@ -1,7 +1,7 @@
 import { GuildQueue, QueueRepeatMode } from "discord-player";
-import { GuildVoiceChannelResolvable } from 'discord.js';
+import { Collection, GuildVoiceChannelResolvable } from 'discord.js';
 
-class Global {
+export class Global {
     static Volume: Number = 10;
     static Queue: GuildQueue<unknown> = null;
     static RepeatMode: QueueRepeatMode = QueueRepeatMode.OFF;
@@ -22,5 +22,19 @@ class Global {
         event: string;
     } = null;
     static LastChannel: GuildVoiceChannelResolvable = null;
+    static readonly Users: Collection<String, User> = new Collection();
 }
-export = Global;
+
+export class User {
+    readonly Id: String = null;
+    readonly Name: String = null;
+    readonly Snowflake: String = null;
+    Permissions: BigInt = 0n;
+
+    constructor(Id: String, Name: String, Snowflake: String, Permissions: BigInt){
+        this.Id = Id;
+        this.Name = Name;
+        this.Snowflake = Snowflake;
+        this.Permissions = Permissions;
+    }
+}

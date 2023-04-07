@@ -1,6 +1,6 @@
 const db = require("../connection.js");
 const { CurrentDate } = require('../util.js');
-const Global = require("../global.js");
+const { Global, User } = require("../global.js");
 const jwt = require('jsonwebtoken');
 const { useMasterPlayer } = require("discord-player");
 const { PermissionsBitField } = require("discord.js");
@@ -18,6 +18,10 @@ module.exports = {
             if(rows.length == 0){
                 ws.send(JSON.stringify({"error":"Invalid authentication"}));
                 return false;
+            } else {
+                if(!Global.Users.has(user)){
+                    Global.Users.set(user,new User(rows[0]['id'],rows[0]['name'],rows[0]['user'],BigInt(rows[0]['permission'])));
+                }
             }
             let Channels = [];
             await useMasterPlayer().client.guilds.fetch();

@@ -79,6 +79,12 @@
         let ChannelList = [];
         let LastEvent = null;
 
+        function showToast(message){
+            $("#wsToast").find(".toast-body").text(message);
+            $("#wsToast").toast({autohide: false});
+            $("#wsToast").toast('show');
+        }
+
         const ws = new WebSocket("wss://mokus.pghost.org/music", "echo-protocol");
         ws.onopen = function(e) {
             console.log("WebSocket is open\n",ws);
@@ -90,11 +96,11 @@
             console.log("WebSocket closed:\n", e);
             if(e.code == 1001)
                 return;
-            $(".alert").show();
-            $(".alert").html("WebSocket kapcsolat megszakadt!");
+            showToast("Megszakadt a kapcsolat a WebSocket szerverrel! Újracsatlakozás folyamatban...");
             setInterval(()=>{
                 const ws = new WebSocket("wss://mokus.pghost.org/music", "echo-protocol");
                 ws.onopen = function(e) {
+                    $("#wsToast").toast("hide");
                     console.log("WebSocket is open, reloading...");
                     window.location = "./list.html";
                 }
@@ -102,8 +108,7 @@
         }
         ws.onerror = function(e) {
             console.log("WebSocket error:\n", e);
-            $(".alert").show();
-            $(".alert").html("WebSocket hiba lépett fel!");
+            showToast("Hiba lépett fel a WebSocket kapcsolatban!");
         }
         ws.onmessage = function(msg) {
             const data = JSON.parse(msg.data);
@@ -305,6 +310,8 @@
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item trackEdit" href="#">Edit</a></li>
                                         <li><a class="dropdown-item trackEnqueue" href="#">Enqueue</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item copyTrackUrl" href="#">Copy URL</a></li>
                                     </ul>
                                 </div>
                             </td>
@@ -625,6 +632,11 @@
                     document.getSelection().removeAllRanges();
                 }
 
+                const unchecked = boxes.filter(function(index){
+                    return !$(this).prop("checked");
+                });
+                $("#mainSelect").prop("checked",unchecked.length == 0);
+
                 lastChecked = this;
             });
 
@@ -639,19 +651,29 @@
                 const boxes = $(".trackSelect:not(#mainSelect)").filter((i,e)=>{return $(e).prop("checked");});
                 if(boxes.length <= 1){
                     const query = $($(this).parents(".trackInfo")).find(".trackPlay").data("query");
-                    ws.send(JSON.stringify({
+                    const event = {
                         event: 'queue',
                         add: query
-                    }));
+                    };
+                    LastEvent = event;
+                    ws.send(JSON.stringify(event));
                 } else {
+                    const tracks = [];
                     for (const b of boxes) {
-                        const query = $($(b).parents(".trackInfo")).find(".trackPlay").data("query");
-                        ws.send(JSON.stringify({
-                            event: 'queue',
-                            add: query
-                        }));
+                        tracks.push($($(b).parents(".trackInfo")).find(".trackPlay").data("query"));
                     }
+                    const event = {
+                        event: 'queue',
+                        add: tracks
+                    };
+                    LastEvent = event;
+                    ws.send(JSON.stringify(event));
                 }
+            });
+
+            $("#saved-page").on('click','.copyTrackUrl', function(){
+                const query = $($(this).parents(".trackInfo")).find(".trackPlay").data("query");
+                navigator.clipboard.writeText(query);
             });
         });
     </script>
@@ -1022,7 +1044,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="trackEditSubmit">Add</button>
+                    <button type="button" class="btn btn-success" id="trackEditSubmit">Save</button>
                 </div>
             </div>
         </div>
@@ -1145,5 +1167,18 @@
             });
         });
     </script>
+
+    <!-- WebSocket error Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="wsToast" class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="toast-header text-white">
+            <strong class="me-auto">WebSocket error</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            Hello World
+          </div>
+        </div>
+    </div>      
 </body>
 </html>

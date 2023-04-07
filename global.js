@@ -1,5 +1,8 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.User = exports.Global = void 0;
 const discord_player_1 = require("discord-player");
+const discord_js_1 = require("discord.js");
 class Global {
     static Volume = 10;
     static Queue = null;
@@ -10,6 +13,20 @@ class Global {
     static Key = "$tqYqbKQq8s8uD7zY";
     static LastRefresh = null;
     static LastChannel = null;
+    static Users = new discord_js_1.Collection();
 }
-module.exports = Global;
+exports.Global = Global;
+class User {
+    Id = null;
+    Name = null;
+    Snowflake = null;
+    Permissions = 0n;
+    constructor(Id, Name, Snowflake, Permissions) {
+        this.Id = Id;
+        this.Name = Name;
+        this.Snowflake = Snowflake;
+        this.Permissions = Permissions;
+    }
+}
+exports.User = User;
 //# sourceMappingURL=global.js.map

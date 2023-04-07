@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, TextInputStyle, ModalBuilder, TextInputBuilder, ActionRowBuilder, PermissionsBitField } = require('discord.js');
+const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, PermissionsBitField } = require('discord.js');
 const db = require("../connection.js");
 
 module.exports = {
@@ -7,26 +7,29 @@ module.exports = {
 		.setDescription('Zene lejátszó felhasználó regisztrálása')
         .setDefaultMemberPermissions(PermissionsBitField.Flags.ModerateMembers),
 	async execute(interaction) {
-        const modal = new ModalBuilder()
-			.setCustomId('registerModal')
-			.setTitle('Zene lejátszó regisztráció');
-        const nameInput = new TextInputBuilder()
-			.setCustomId('nameInput')
-			.setLabel("Felhasználónév")
-			.setStyle(TextInputStyle.Short)
-            .setRequired(true)
-            .setMinLength(3)
-            .setMaxLength(72);
-        const passInput = new TextInputBuilder()
-			.setCustomId('passwordInput')
-			.setLabel("Jelszó")
-			.setStyle(TextInputStyle.Short)
-            .setRequired(true)
-            .setMinLength(8);
-        const firstActionRow = new ActionRowBuilder().addComponents(nameInput);
-		const secondActionRow = new ActionRowBuilder().addComponents(passInput);
-        modal.addComponents(firstActionRow, secondActionRow);
+		await interaction.deferReply({ephemeral: true});
 
-        return await interaction.showModal(modal);
+        const userID = interaction.member.id;
+        const [rows] = await db.execute("SELECT * FROM `music_users` WHERE `user`=?",[userID]);
+        if(rows.length != 0){
+			const row = new ActionRowBuilder()
+			.addComponents(
+				new ButtonBuilder()
+					.setLabel('Login')
+					.setStyle(ButtonStyle.Link)
+					.setURL("https://mokus.pghost.org/"),
+			);
+            return interaction.followUp({content:`You already have an account!`, ephemeral: true, components: [row]});
+        }
+
+		const row = new ActionRowBuilder()
+			.addComponents(
+				new ButtonBuilder()
+					.setCustomId('registerButton')
+					.setLabel('Register')
+					.setStyle(ButtonStyle.Primary),
+			);
+        
+		return interaction.followUp({content:`Click the button to create a new account!`, ephemeral: true, components: [row]});
 	},
 };

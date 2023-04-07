@@ -3,7 +3,7 @@ const db = require("../connection.js");
 const { version, displayName } = require('../package.json');
 const { CurrentDate } = require('../util.js');
 const perms = require('../perms.js');
-const Global = require('../global.js');
+const { Global } = require("../global.js");
 
 module.exports = {
 	name: Events.ClientReady,
