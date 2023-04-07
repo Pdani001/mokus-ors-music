@@ -6,6 +6,7 @@ const { Global, User } = require("../global.js");
 
 module.exports = {
 	name: "auth",
+    path: "/auth",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const [rows] = await db.execute("SELECT * FROM `music_users` WHERE `name`=?",[data.name || ""]);

@@ -72,15 +72,15 @@
         let isStopped = true;
         let countdown = false;
         let BulkMode = false;
-        console.log(window.location.search);
         const _GET = Object.fromEntries(new URLSearchParams(window.location.search).entries());
         let CurrentFolder = _GET.folder || "";
         let ParentFolder = "";
         let ChannelList = [];
         let LastEvent = null;
 
-        function showToast(message){
+        function showToast(title, message){
             $("#wsToast").find(".toast-body").text(message);
+            $("#wsToast").find(".header-text").text(title);
             $("#wsToast").toast({autohide: false});
             $("#wsToast").toast('show');
         }
@@ -96,7 +96,7 @@
             console.log("WebSocket closed:\n", e);
             if(e.code == 1001)
                 return;
-            showToast("Megszakadt a kapcsolat a WebSocket szerverrel! Újracsatlakozás folyamatban...");
+            showToast("WebSocket error","Megszakadt a kapcsolat a WebSocket szerverrel! Újracsatlakozás folyamatban...");
             setInterval(()=>{
                 const ws = new WebSocket("wss://mokus.pghost.org/music", "echo-protocol");
                 ws.onopen = function(e) {
@@ -108,7 +108,7 @@
         }
         ws.onerror = function(e) {
             console.log("WebSocket error:\n", e);
-            showToast("Hiba lépett fel a WebSocket kapcsolatban!");
+            showToast("WebSocket error","Hiba lépett fel a WebSocket kapcsolatban!");
         }
         ws.onmessage = function(msg) {
             const data = JSON.parse(msg.data);
@@ -212,8 +212,6 @@
                             const item = $(ui.item);
                             const oldIndex = Number(item.data("id"));
                             const newIndex = item.index();
-                            console.log(oldIndex);
-                            console.log(newIndex);
                             ws.send(JSON.stringify({
                                 event: 'sortQueue',
                                 oldIndex: oldIndex,
@@ -409,7 +407,6 @@
             const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 
             $("#volume").on("change",function(){
-                console.log("Updating volume");
                 ws.send(JSON.stringify({
                     event: "volume",
                     volume: $(this).val()
@@ -600,7 +597,6 @@
                         }
                         list.push(data);
                     }
-                    console.log(list);
                     if(confirm(`Are you sure you want to remove these ${list.length} files?`)){
                         ws.send(JSON.stringify({
                             event: 'save',
@@ -833,7 +829,7 @@
             <form class="d-flex" role="search">
               <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search">
             </form>
-            <button class="btn btn-secondary me-1" aria-label="Refresh" id="refresh" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Refresh">
+            <button class="btn btn-secondary me-1" aria-label="Refresh channels" id="refresh" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Refresh channels">
                 <i class="bi bi-arrow-clockwise"></i>
             </button>
             <button class="btn btn-danger me-1" aria-label="Stop" id="stop" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Stop">
@@ -1182,13 +1178,13 @@
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="wsToast" class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
           <div class="toast-header text-white">
-            <strong class="me-auto">WebSocket error</strong>
+            <strong class="me-auto header-text">WebSocket error</strong>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
           </div>
           <div class="toast-body">
             Hello World
           </div>
         </div>
-    </div>      
+    </div>
 </body>
 </html>

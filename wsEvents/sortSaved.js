@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
 	name: "sortSaved",
+    path: "/music",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
@@ -29,7 +30,7 @@ module.exports = {
                 } else {
                     await db.execute("UPDATE `music_files` SET `info`=JSON_SET(`info`,'$.parent',?) WHERE `id`=?",[data.newParent,data.file]);
                 }
-                wss.broadcast(data);
+                wss.broadcast(data,"/music");
             } else {
                 ws.send(JSON.stringify({"error":"You do not have permission to do this"}));
             }

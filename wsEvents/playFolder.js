@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
 	name: "playFolder",
+    path: "/music",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
@@ -50,9 +51,14 @@ module.exports = {
                         queue.tracks.add(track_chunks[i]);
                     }
                 } else {
+                    Global.Queue.tracks.clear();
                     for(let i = chunk; i < track_chunks.length; i++){
                         Global.Queue.tracks.add(track_chunks[i]);
                     }
+                    Global.Queue.node.setPaused(false);
+                    Global.Queue.setRepeatMode(0);
+                    Global.Queue.node.skip();
+                    Global.Queue.setRepeatMode(Global.RepeatMode);
                 }
             } else {
                 ws.send(JSON.stringify({"error":"You do not have permission to do this"}));

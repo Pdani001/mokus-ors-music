@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
 	name: "sortQueue",
+    path: "/music",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
@@ -32,7 +33,7 @@ module.exports = {
                     wss.broadcast({
                         event: 'listQueue',
                         queue: Global.Queue.tracks.toArray()
-                    });
+                    },"/music");
                 }
             } else {
                 ws.send(JSON.stringify({"error":"You do not have permission to do this"}));

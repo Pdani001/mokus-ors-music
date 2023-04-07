@@ -20,7 +20,7 @@
     </script>
     <script>
         $(function(){
-            const ws = new WebSocket("wss://mokus.pghost.org", "echo-protocol");
+            const ws = new WebSocket("wss://mokus.pghost.org/auth", "echo-protocol");
             ws.onopen = function(e) {
                 console.log("WebSocket is open");
             }

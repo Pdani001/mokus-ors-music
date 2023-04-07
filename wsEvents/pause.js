@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
 	name: "pause",
+    path: "/music",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;

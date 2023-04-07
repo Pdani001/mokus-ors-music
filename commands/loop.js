@@ -16,9 +16,9 @@ module.exports = {
             .setMaxValue(2)
             .setRequired(true)
             .addChoices(
-                {name: 'Kikapcsolva', value: 0},
-                {name: 'Jelenlegi szám', value: 1},
-                {name: 'Lejátszási lista', value: 2},
+                {name: 'Kikapcsolva', value: 0}, // Off
+                {name: 'Jelenlegi szám', value: 1}, // Track
+                {name: 'Lejátszási lista', value: 2}, // Queue
             )),
 	async execute(interaction) {
         // let's defer the interaction as things can take time to process

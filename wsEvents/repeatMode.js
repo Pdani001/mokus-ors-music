@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
 	name: "repeatMode",
+    path: "/music",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
@@ -20,7 +21,7 @@ module.exports = {
                 return false;
             }
             if(WSPermissions.hasPermission(User.Permissions,WSPermissions.Play)){
-                wss.broadcast(data);
+                wss.broadcast(data,"/music");
                 Global.RepeatMode = data.repeat || 0;
                 if(Global.Queue != null){
                     Global.Queue.setRepeatMode(Global.RepeatMode);

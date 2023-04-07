@@ -8,6 +8,7 @@ const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
 	name: "play",
+    path: "/music",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
@@ -29,6 +30,7 @@ module.exports = {
                     if(track == undefined){
                         return false;
                     }
+                    Global.Queue.node.setPaused(false);
                     Global.Queue.node.jump(track);
                     return true;
                 }
@@ -38,6 +40,7 @@ module.exports = {
                 if(Global.Queue != null && results.tracks.length == 1){
                     Global.Queue.insertTrack(results.tracks[0], 0);
                     if(Global.Queue.tracks.size > 0){
+                        Global.Queue.node.setPaused(false);
                         Global.Queue.node.jump(results.tracks[0]);
                     }
                 } else {

@@ -12,11 +12,12 @@ const { Player } = require('discord-player');
 const player = Player.singleton(client);
 const { WebSocketServer } = require("ws");
 const { Global } = require("./global.js");
+const { parse } = require("url");
 
 const express = require("express");
 const web = express();
 web.use(express.static(path.join(__dirname, 'public_html')));
-const server = web.listen(6065);
+const server = web.listen(process.env.PORT);
 if(server.listening){
   console.log(CurrentDate()+"HTTP/WebSocket server is listening on port "+server.address().port);
 }
@@ -29,7 +30,11 @@ const wsEvents = new Collection();
 for (const file of wsEventFiles) {
   const filePath = path.join(wsEventsPath, file);
   const event = require(filePath);
-  wsEvents.set(event.name, event);
+  if ('name' in event && 'execute' in event && 'path' in event){
+    wsEvents.set(event.name, event);
+  } else {
+    console.log(`[WARNING] The WSEvent at ${filePath} is missing a required "name", "path" or "execute" property.`);
+  }
 }
 
 player.events.on('error', (queue, error) => {
@@ -53,24 +58,20 @@ function playerLoadQueue(queue, track){
   wss.broadcast({
     event: 'listQueue',
     queue: queue.tracks.toArray()
-  });
+  },"/music");
 }
 player.events.on('disconnect', playerLeaveEvent);
 player.events.on('emptyQueue', playerLeaveEvent);
 function playerLeaveEvent(queue){
   Global.Queue = null;
-  wss.clients.forEach(function each(ws) {
-    if(ws.auth){
-      let refresh = Global.LastRefresh;
-      refresh.music.paused = true;
-      refresh.music.stopped = true;
-      ws.send(JSON.stringify(refresh))
-    }
-  });
+  let refresh = Global.LastRefresh;
+  refresh.music.paused = true;
+  refresh.music.stopped = true;
+  wss.broadcast(refresh,"/music");
   wss.broadcast({
     event: 'listQueue',
     queue: []
-  });
+  },"/music");
 }
 
 const interval = setInterval(function ping() {
@@ -94,7 +95,7 @@ const interval = setInterval(function ping() {
       },
       event: 'refresh'
     };
-    wss.broadcast(refresh);
+    wss.broadcast(refresh,"/music");
     Global.LastRefresh = refresh;
   }
 }, 500);
@@ -103,14 +104,10 @@ wss.on('close', function close() {
 });
 
 client.broadcastWS = (data)=>{
-  wss.clients.forEach(function each(ws) {
-    if(ws.auth){
-      ws.send(JSON.stringify(data));
-    }
-  });
+  wss.broadcast(data,"/music");
 }
-wss.broadcast = (data)=>{
-  wss.clients.forEach(function each(ws) {
+wss.broadcast = (data,path)=>{
+  Global.WSClients.get(path).forEach(function each(ws) {
     if(ws.auth){
       ws.send(JSON.stringify(data));
     }
@@ -118,18 +115,13 @@ wss.broadcast = (data)=>{
 }
 
 wss.on('connection', function connection(ws, req) {
-  //console.log(`[${CurrentDate(false)}] [WS] Client connected`);
-  if(req.cookies.token){
-    ws.auth = req.cookies.token;
-  }
-
   if(ws.auth && Global.LastRefresh != null){
     let refresh = Global.LastRefresh;
     refresh.music.paused = Global.Queue != null ? Global.Queue.node.isPaused() : true;
     refresh.music.stopped = Global.Queue == null;
     ws.send(JSON.stringify(refresh))
   }
-  
+  const { pathname } = parse(req.url);
   ws.on('message', function message(data) {
     const obj = JSON.parse(data);
     const eventName = obj.event || "";
@@ -137,6 +129,12 @@ wss.on('connection', function connection(ws, req) {
     if(!event){
       ws.send(JSON.stringify({
         error: `Invalid event '${eventName}'`
+      }));
+      return;
+    }
+    if(event.path != pathname && event.path != "*"){
+      ws.send(JSON.stringify({
+        error: `Invalid path '${pathname}' for event '${eventName}' (Required path: '${event.path}')`
       }));
       return;
     }
@@ -148,19 +146,34 @@ wss.on('connection', function connection(ws, req) {
 });
 server.on('upgrade', function upgrade(request, socket, head) {
   if(request.headers['origin'] == "https://mokus.pghost.org"){
+    var cookies = {};
+    //Not working any more
+    //if(client.upgradeReq.headers.cookie) request.headers.cookie.split(';')...
+    //This works
+    if(request.headers.cookie) request.headers.cookie.split(';').forEach(function(cookie)
+    {
+      var parts = cookie.match(/(.*?)=(.*)$/);
+      var name = parts[1].trim();
+      var value = (parts[2] || '').trim();
+      cookies[ name ] = value;
+    });
+    request.cookies = cookies;
+    const { pathname } = parse(request.url);
+    if(request.cookies.token == undefined){
+      if(pathname != "/auth"){
+        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+    }
     wss.handleUpgrade(request, socket, head, function done(ws) {
-      var cookies = {};
-      //Not working any more
-      //if(client.upgradeReq.headers.cookie) request.headers.cookie.split(';')...
-      //This works
-      if(request.headers.cookie) request.headers.cookie.split(';').forEach(function(cookie)
-      {
-        var parts = cookie.match(/(.*?)=(.*)$/);
-        var name = parts[1].trim();
-        var value = (parts[2] || '').trim();
-        cookies[ name ] = value;
-      });
-      request.cookies = cookies;
+      if(request.cookies.token){
+        ws.auth = request.cookies.token;
+      }
+      if(!Global.WSClients.has(pathname)){
+        Global.WSClients.set(pathname, new Set());
+      }
+      Global.WSClients.get(pathname).add(ws);
       wss.emit('connection', ws, request);
     });
     return;

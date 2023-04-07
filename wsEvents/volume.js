@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
 	name: "volume",
+    path: "/music",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
@@ -20,7 +21,7 @@ module.exports = {
                 return false;
             }
             if(WSPermissions.hasPermission(User.Permissions,WSPermissions.Play)){
-                wss.broadcast(data);
+                wss.broadcast(data,"/music");
                 Global.Volume = Number(data.volume);
                 if(Global.Volume > 100 && !WSPermissions.hasPermission(permissions,WSPermissions.Administrator))
                     Global.Volume = 100;

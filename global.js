@@ -14,6 +14,7 @@ class Global {
     static LastRefresh = null;
     static LastChannel = null;
     static Users = new discord_js_1.Collection();
+    static WSClients = new discord_js_1.Collection();
 }
 exports.Global = Global;
 class User {

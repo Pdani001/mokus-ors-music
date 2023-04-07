@@ -21,16 +21,25 @@
     </script>
     <script>
 
+        function showToast(title,message){
+            $("#wsToast").find(".toast-body").text(message);
+            $("#wsToast").find(".header-text").text(title);
+            $("#wsToast").toast({autohide: false});
+            $("#wsToast").toast('show');
+        }
+
         const ws = new WebSocket("wss://mokus.pghost.org/settings", "echo-protocol");
         ws.onopen = function(e) {
             console.log("WebSocket is open\n",ws);
+            ws.send(JSON.stringify({
+                event: 'getSettings'
+            }));
         }
         ws.onclose = function(e) {
             console.log("WebSocket closed:\n", e);
             if(e.code == 1001)
                 return;
-            $(".alert").show();
-            $(".alert").html("WebSocket kapcsolat megszakadt!");
+            showToast("WebSocket error","WebSocket connection terminated! Reconnecting...");
             setInterval(()=>{
                 const ws = new WebSocket("wss://mokus.pghost.org/settings", "echo-protocol");
                 ws.onopen = function(e) {
@@ -41,16 +50,31 @@
         }
         ws.onerror = function(e) {
             console.log("WebSocket error:\n", e);
-            $(".alert").show();
-            $(".alert").html("WebSocket hiba lépett fel!");
+            showToast("WebSocket error","An error occurred in the WebSocket connection!");
         }
         ws.onmessage = function(msg) {
             const data = JSON.parse(msg.data);
             if(data.error){
                 console.error(data);
+                if(!data.event){
+                    showToast("WebSocket error",data.error);
+                }
             }
             const event = data.event || "";
-            
+            if(event == "getSettings"){
+                if(data.isAdmin){
+                    $("#admin-nav").removeClass("d-none");
+                }
+            }
+            if(event == "changePassword"){
+                if(data.success){
+                    Cookies.remove("token");
+                    window.location = "./settings.html";
+                } else {
+                    showToast("Password change",data.error);
+                    $("#passwordChangeForm").find("input, button").prop("disabled",false);
+                }
+            }
         }
 
         $(function(){
@@ -65,6 +89,18 @@
             $(`.nav > .nav-link`).on("shown.bs.tab",function(event){
                 const target = $(event.target).data("bsTarget");
                 
+            });
+
+            $("#passwordChangeForm").submit(function (event){
+                event.preventDefault();
+                $("#passwordChangeForm").find("input, button").prop("disabled",true);
+                const msg = {
+                    event: "changePassword",
+                    old: $("#oldPw").val(),
+                    new: $("#newPw1").val(),
+                    newRepeat: $("#newPw2").val(),
+                };
+                ws.send(JSON.stringify(msg));
             });
         });
     </script>
@@ -110,6 +146,10 @@
                 display: initial;
             }
         }
+
+        #account-page > .row {
+            --bs-gutter-x: 0;
+        }
     </style>
 </head>
 <body>
@@ -139,32 +179,50 @@
         <div class="row">
             <div class="col-md-2 mb-2">
                 <nav class="nav flex-column">
-                    <a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#saved-page">Test1</a>
-                    <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#queue-page">Test2</a>
+                    <a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#account-page">Account</a>
+                    <a class="nav-link d-none" href="#" data-bs-toggle="tab" data-bs-target="#admin-page" id="admin-nav">Admin</a>
                 </nav>
             </div>
             <div class="col-md-10">
                 <div class="tab-content">
-                    <div class="tab-pane active" id="saved-page">
-                        <div class="float-end text-end my-2">
-                            <button class="btn btn-sm btn-primary" id="addSaved"><i class="bi bi-link-45deg"></i> <span class="hide-sm">Btn1</span></button>
-                            <button class="btn btn-sm btn-primary" id="addFolder"><i class="bi bi-folder-plus"></i> <span class="hide-sm">Btn2</span></button>
-                            <button class="btn btn-sm btn-success" id="playFolder" title="Btn3"><i class="bi bi-play-fill"></i></button>
-                            <button class="btn btn-sm btn-info" id="toggleBulkMode" title="Btn4"><i class="bi bi-list-check"></i></button>
+                    <div class="tab-pane active" id="account-page">
+                        <h1>Account</h1>
+                        <div class="row">
+                            <div class="col-md-6 col-lg-5 bg-body-secondary border rounded p-3">
+                                <div class="row align-items-center">
+                                    <div class="col text-center">
+                                        <h2>Password change</h2>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center">
+                                    <form class="col" id="passwordChangeForm" method="POST">
+                                        <label for="oldPw">Old password:</label> <input type="password" name="oldPw" id="oldPw" class="form-control">
+                                        <label for="newPw1">New password:</label> <input type="password" name="newPw1" id="newPw1" class="form-control">
+                                        <label for="newPw2">Repeat new password:</label> <input type="password" name="newPw2" id="newPw2" class="form-control">
+                                        <button id="passwordChange" class="btn btn-success w-100 mt-2">Módosít</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                        <h1>Test1</h1>
-                        <div class="list-content"></div>
                     </div>
-                    <div class="tab-pane" id="queue-page">
-                        <div class="float-end text-end my-2">
-                            <button class="btn btn-sm btn-primary" id="addQueue"><i class="bi bi-link-45deg"></i> <span class="hide-sm">Btn1</span></button>
-                            <button class="btn btn-sm btn-danger" id="clearQueue"><i class="bi bi-trash-fill"></i> <span class="hide-sm">Btn2</span></button>
-                        </div>
-                        <h1>Test2</h1>
-                        <div class="list-content"></div>
+                    <div class="tab-pane" id="admin-page">
+                        <h1>Admin</h1>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- WebSocket error Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="wsToast" class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="toast-header text-white">
+            <strong class="me-auto header-text">WebSocket error</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            Hello World
+          </div>
         </div>
     </div>
 </body>

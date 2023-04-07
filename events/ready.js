@@ -15,14 +15,6 @@ module.exports = {
             const key = row['name'];
             const value = row['value'];
             switch(key){
-                case "default.channel":
-                    try {
-                        const channel = await client.channels.fetch(value);
-                        Global.Default.Channel = channel;
-                    } catch(e){
-                        console.log(CurrentDate()+`Value '${value}' is invalid for key '${key}'`);
-                    }
-                    break;
                 case "volume":
                     Global.Volume = Number(value);
                     break;

@@ -8,6 +8,7 @@ const uuid = require("uuid").v4;
 
 module.exports = {
 	name: "save",
+    path: "/music",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
@@ -84,7 +85,7 @@ module.exports = {
                         }));
                     }
                 }
-                wss.broadcast(data);
+                wss.broadcast(data,"/music");
             } else {
                 ws.send(JSON.stringify({"error":"You do not have permission to do this"}));
             }

@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
 	name: "skip",
+    path: "/music",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
@@ -22,9 +23,12 @@ module.exports = {
             if(WSPermissions.hasPermission(User.Permissions,WSPermissions.Play)){
                 if(Global.Queue != null){
                     if(data.back){
-                        if(Global.Queue.history.previousTrack != null)
+                        if(Global.Queue.history.previousTrack != null){
+                            Global.Queue.node.setPaused(false);
                             Global.Queue.history.previous();
+                        }
                     } else {
+                        Global.Queue.node.setPaused(false);
                         Global.Queue.node.skip();
                     }
                 }

@@ -1,13 +1,11 @@
 import { GuildQueue, QueueRepeatMode } from "discord-player";
 import { Collection, GuildVoiceChannelResolvable } from 'discord.js';
+import WebSocket from 'ws';
 
 export class Global {
     static Volume: Number = 10;
     static Queue: GuildQueue<unknown> = null;
     static RepeatMode: QueueRepeatMode = QueueRepeatMode.OFF;
-    static Default = {
-        Channel: <GuildVoiceChannelResolvable> null
-    };
     static readonly Key: string = "$tqYqbKQq8s8uD7zY";
     static LastRefresh: {
         music: {
@@ -23,6 +21,7 @@ export class Global {
     } = null;
     static LastChannel: GuildVoiceChannelResolvable = null;
     static readonly Users: Collection<String, User> = new Collection();
+    static readonly WSClients: Collection<String, Set<WebSocket.WebSocket>> = new Collection();
 }
 
 export class User {
