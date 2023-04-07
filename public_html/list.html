@@ -382,7 +382,9 @@
                     const server = ChannelList[index];
                     $("#selectServerInput").append($(`<option value="${index}">${server.name}</option>`));
                 }
-                $("#selectChannelModal").modal("show");
+                const show = data.show || false;
+                if(show)
+                    $("#selectChannelModal").modal("show");
             }
             if(event == "sortSaved" || event == "save" || event == "trackEdit"){
                 if(data.error){
@@ -441,6 +443,11 @@
                     event: "stop"
                 }));
                 $("#toggle .bi").removeClass("bi-pause-fill").addClass("bi-play-fill");
+            });
+            $("#refresh").click(function(){
+                ws.send(JSON.stringify({
+                    event: "listChannels"
+                }));
             });
             $("#skip").click(function(){
                 ws.send(JSON.stringify({
@@ -826,6 +833,9 @@
             <form class="d-flex" role="search">
               <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search">
             </form>
+            <button class="btn btn-secondary me-1" aria-label="Refresh" id="refresh" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Refresh">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
             <button class="btn btn-danger me-1" aria-label="Stop" id="stop" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Stop">
                 <i class="bi bi-stop-fill"></i>
             </button>

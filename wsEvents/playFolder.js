@@ -27,7 +27,7 @@ module.exports = {
                     return false;
                 let channel = Global.Queue != null ? Global.Queue.channel : data.channel || null;
                 if(channel == null){
-                    ws.send(JSON.stringify({"event": "listChannels"}));
+                    ws.send(JSON.stringify({"event": "listChannels", "show": true}));
                     return false;
                 }
                 console.log(`[${CurrentDate(false)}] [WS] Folder playback start from ${UserID}`);

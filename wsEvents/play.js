@@ -43,7 +43,7 @@ module.exports = {
                 } else {
                     const channel = Global.Queue != null ? Global.Queue.channel : data.channel || null;
                     if(channel == null){
-                        ws.send(JSON.stringify({"event": "listChannels"}));
+                        ws.send(JSON.stringify({"event": "listChannels", "show": true}));
                         return false;
                     }
                     await useMasterPlayer().play(data.channel, results, {

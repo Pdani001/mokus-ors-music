@@ -1,27 +1,21 @@
-const db = require("../connection.js");
-const { CurrentDate } = require('../util.js');
-const { Global, User } = require("../global.js");
+const { Global } = require("../global.js");
 const jwt = require('jsonwebtoken');
 const { useMasterPlayer } = require("discord-player");
 const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
-	name: "getGlobal",
+	name: "listChannels",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
 
         try {
             const payload = jwt.verify(ws.auth,key);
-            const user = payload.sub;
-            const [rows] = await db.execute("SELECT * FROM `music_users` WHERE `id`=?",[user || ""]);
-            if(rows.length == 0){
+            const UserID = payload.sub;
+            const User = Global.Users.get(UserID);
+            if(User == undefined){
                 ws.send(JSON.stringify({"error":"Invalid authentication"}));
                 return false;
-            } else {
-                if(!Global.Users.has(user)){
-                    Global.Users.set(user,new User(rows[0]['id'],rows[0]['name'],rows[0]['user'],BigInt(rows[0]['permission'])));
-                }
             }
             let Channels = [];
             await useMasterPlayer().client.guilds.fetch();
@@ -38,10 +32,9 @@ module.exports = {
                 }
             }));
             ws.send(JSON.stringify({
-                event: 'getGlobal',
-                volume: Global.Volume,
-                repeat: Global.RepeatMode,
-                channels: Channels
+                event: 'listChannels',
+                channels: Channels,
+                show: false
             }));
         } catch(err){
             console.error(err);
