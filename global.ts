@@ -1,5 +1,5 @@
 import { GuildQueue, QueueRepeatMode } from "discord-player";
-import { Collection, GuildVoiceChannelResolvable } from 'discord.js';
+import { Collection } from 'discord.js';
 import WebSocket from 'ws';
 
 export class Global {
@@ -19,7 +19,6 @@ export class Global {
         };
         event: string;
     } = null;
-    static LastChannel: GuildVoiceChannelResolvable = null;
     static readonly Users: Collection<String, User> = new Collection();
     static readonly WSClients: Collection<String, Set<WebSocket.WebSocket>> = new Collection();
 }

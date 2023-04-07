@@ -7,12 +7,8 @@ class Global {
     static Volume = 10;
     static Queue = null;
     static RepeatMode = discord_player_1.QueueRepeatMode.OFF;
-    static Default = {
-        Channel: null
-    };
     static Key = "$tqYqbKQq8s8uD7zY";
     static LastRefresh = null;
-    static LastChannel = null;
     static Users = new discord_js_1.Collection();
     static WSClients = new discord_js_1.Collection();
 }
