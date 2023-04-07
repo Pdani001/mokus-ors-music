@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mókus Őrs</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <!-- # BOOTSTRAP / JQUERY # -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous" defer></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <!-- # CUSTOM # -->
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+    <script>
+        if(!Cookies.get("token")){
+            window.location = "./login.html";
+        }
+    </script>
+    <script>
+
+        const ws = new WebSocket("wss://mokus.pghost.org/settings", "echo-protocol");
+        ws.onopen = function(e) {
+            console.log("WebSocket is open\n",ws);
+        }
+        ws.onclose = function(e) {
+            console.log("WebSocket closed:\n", e);
+            if(e.code == 1001)
+                return;
+            $(".alert").show();
+            $(".alert").html("WebSocket kapcsolat megszakadt!");
+            setInterval(()=>{
+                const ws = new WebSocket("wss://mokus.pghost.org/settings", "echo-protocol");
+                ws.onopen = function(e) {
+                    console.log("WebSocket is open, reloading...");
+                    window.location = "./settings.html";
+                }
+            },10000);
+        }
+        ws.onerror = function(e) {
+            console.log("WebSocket error:\n", e);
+            $(".alert").show();
+            $(".alert").html("WebSocket hiba lépett fel!");
+        }
+        ws.onmessage = function(msg) {
+            const data = JSON.parse(msg.data);
+            if(data.error){
+                console.error(data);
+            }
+            const event = data.event || "";
+            
+        }
+
+        $(function(){
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+            $("#logout").click(function(){
+                Cookies.remove("token");
+                window.location = "./login.html";
+            });
+            
+            $(`.nav > .nav-link`).on("shown.bs.tab",function(event){
+                const target = $(event.target).data("bsTarget");
+                
+            });
+        });
+    </script>
+    <style>
+        .navbar .nav-link {
+            padding-top: 15px;
+            padding-bottom: 15px;
+            padding-right: var(--bs-navbar-nav-link-padding-x);
+            padding-left: var(--bs-navbar-nav-link-padding-x);
+        }
+        .navbar .nav-link.active, .nav .nav-link.active {
+            --bs-bg-opacity: 1;
+            background-color: rgba(var(--bs-secondary-bg-rgb),var(--bs-bg-opacity)) !important;
+        }
+        .navbar-collapse {
+            padding-top: 10px;
+        }
+        .page-content {
+            margin-top: 70px;
+            margin-bottom: 200px;
+        }
+        @media (min-width: 992px){
+            .navbar-expand-lg .navbar-collapse {
+                display: flex !important;
+                flex-basis: auto;
+                padding-top: 0;
+            }
+            .page-content {
+                margin-top: 80px;
+            }
+        }
+        @media (min-width: 768px) {
+            .page-content {
+                margin-bottom: 60px;
+            }
+        }
+
+        .btn .hide-sm {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .btn .hide-sm {
+                display: initial;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar fixed-top navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/">Mókus Őrs</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="list.html">Music</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="settings.html">Settings</a>
+              </li>
+            </ul>
+            <button class="btn btn-primary" aria-label="Logout" id="logout" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Logout">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid page-content">
+        <div class="row">
+            <div class="col-md-2 mb-2">
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#saved-page">Test1</a>
+                    <a class="nav-link" href="#" data-bs-toggle="tab" data-bs-target="#queue-page">Test2</a>
+                </nav>
+            </div>
+            <div class="col-md-10">
+                <div class="tab-content">
+                    <div class="tab-pane active" id="saved-page">
+                        <div class="float-end text-end my-2">
+                            <button class="btn btn-sm btn-primary" id="addSaved"><i class="bi bi-link-45deg"></i> <span class="hide-sm">Btn1</span></button>
+                            <button class="btn btn-sm btn-primary" id="addFolder"><i class="bi bi-folder-plus"></i> <span class="hide-sm">Btn2</span></button>
+                            <button class="btn btn-sm btn-success" id="playFolder" title="Btn3"><i class="bi bi-play-fill"></i></button>
+                            <button class="btn btn-sm btn-info" id="toggleBulkMode" title="Btn4"><i class="bi bi-list-check"></i></button>
+                        </div>
+                        <h1>Test1</h1>
+                        <div class="list-content"></div>
+                    </div>
+                    <div class="tab-pane" id="queue-page">
+                        <div class="float-end text-end my-2">
+                            <button class="btn btn-sm btn-primary" id="addQueue"><i class="bi bi-link-45deg"></i> <span class="hide-sm">Btn1</span></button>
+                            <button class="btn btn-sm btn-danger" id="clearQueue"><i class="bi bi-trash-fill"></i> <span class="hide-sm">Btn2</span></button>
+                        </div>
+                        <h1>Test2</h1>
+                        <div class="list-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

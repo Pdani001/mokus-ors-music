@@ -1,0 +1,6 @@
+/node_modules
+/https
+package-lock.json
+.eslintsrc.json
+tsconfig.json
+db.json

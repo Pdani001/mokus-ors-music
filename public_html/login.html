@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mókus Őrs</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <!-- # BOOTSTRAP / JQUERY # -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous" defer></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <!-- # CUSTOM # -->
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+    <script>
+        if(Cookies.get("token")){
+            window.location = "./list.html";
+        }
+    </script>
+    <script>
+        $(function(){
+            const ws = new WebSocket("wss://mokus.pghost.org", "echo-protocol");
+            ws.onopen = function(e) {
+                console.log("WebSocket is open");
+            }
+            ws.onclose = function(e) {
+                console.log("WebSocket closed:\n", e);
+                if(e.code == 1001)
+                    return;
+                $(".alert").show();
+                $(".alert").html("WebSocket kapcsolat megszakadt!");
+            }
+            ws.onerror = function(e) {
+                console.log("WebSocket error:\n", e);
+                $(".alert").show();
+                $(".alert").html("WebSocket hiba lépett fel!");
+            }
+            ws.onmessage = function(msg) {
+                const data = JSON.parse(msg.data);
+                console.log(data);
+                if(data.error){
+                    $(".alert").show();
+                    $(".alert").html(data.error);
+                    $("#name").prop("disabled",false);
+                    $("#password").prop("disabled",false);
+                    $("#login").prop("disabled",false);
+                } else {
+                    Cookies.set("token",data.token, {secure: true, sameSite: 'strict'});
+                    window.location = "./list.html";
+                }
+            }
+            $("#loginForm").submit(function(event){
+                event.preventDefault();
+                if(ws.readyState != ws.OPEN)
+                    return;
+                $(".alert").hide();
+                $("#name").prop("disabled",true);
+                $("#password").prop("disabled",true);
+                $("#login").prop("disabled",true);
+                const msg = {
+                    event: "auth",
+                    name: $("#name").val(),
+                    password: $("#password").val()
+                };
+                ws.send(JSON.stringify(msg));
+            });
+        });
+    </script>
+    <style>
+    .container {
+        max-width: 400px;
+    }
+    </style>
+</head>
+<body>
+    <div class="container bg-body-secondary border rounded p-3 mt-3 m-auto">
+        <div class="row align-items-center">
+            <div class="col text-center">
+                <h1>Belépés</h1>
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col">
+                <div class="alert alert-danger" style="display: none;">Hiba üzenet, száll a széllel</div>
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <form class="col" id="loginForm" method="POST">
+                <label for="name">Felhasználónév:</label> <input type="text" name="name" id="name" class="form-control">
+                <label for="password">Jelszó:</label> <input type="password" name="password" id="password" class="form-control">
+                <button id="login" class="btn btn-success w-100 mt-2">Belépés</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

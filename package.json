@@ -1,0 +1,30 @@
+{
+  "name": "mokusors-musicbot",
+  "version": "0.2.0",
+  "dependencies": {
+    "@discord-player/extractor": "latest",
+    "@discordjs/opus": "latest",
+    "@discordjs/voice": "latest",
+    "bcrypt": "latest",
+    "bufferutil": "latest",
+    "discord-player": "latest",
+    "discord.js": "latest",
+    "erlpack": "latest",
+    "express": "latest",
+    "ffmpeg-static": "latest",
+    "jsonwebtoken": "latest",
+    "mysql2": "latest",
+    "play-dl": "^1.9.6",
+    "utf-8-validate": "latest",
+    "uuid": "latest",
+    "ws": "latest",
+    "zlib-sync": "latest",
+    "dotenv": "latest"
+  },
+  "author": {
+    "name": "Pdani",
+    "url": "https://pdani.hu/"
+  },
+  "description": "The official Musicbot used on the Mókus Őrs discord server",
+  "displayName": "Mókus Őrs Musicbot"
+}
