@@ -20,6 +20,11 @@
         }
     </script>
     <script>
+        String.prototype.capitalize = function(){
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        }
+    </script>
+    <script>
 
         function showToast(title,message){
             $("#wsToast").find(".toast-body").text(message);
@@ -61,6 +66,7 @@
                 }
             }
             const event = data.event || "";
+            delete data.event;
             if(event == "getSettings"){
                 if(data.isAdmin){
                     $("#admin-nav").removeClass("d-none");
@@ -75,6 +81,75 @@
                     $("#passwordChangeForm").find("input, button").prop("disabled",false);
                 }
             }
+            if(event == "listUsers"){
+                if(data.error){
+                    showToast("Admin Page",data.error);
+                    $("#userList").text("What are you doing step-bro?");
+                    return;
+                }
+                const table = $(`<table class="table table-striped table-hover"></table>`);
+                const tbody = $(`<tbody></tbody>`);
+                data.list.forEach(user=>{
+                    const row = $.parseHTML(
+                        `<tr data-id="${user.id}" data-permission="${user.permission}" role="button" class="userEntry">
+                            <td class="entryName">${user.name}</td>
+                        </tr>`
+                    );
+                    tbody.append(row);
+                });
+                table.append(tbody);
+                $("#userList").html(table);
+                $(".username-display").text(data.list[0].name);
+                $("#userId").val(data.list[0].id);
+                $(".perm-check").prop("checked",false);
+                ws.send(JSON.stringify({
+                    event: "getUserPerms",
+                    list: data.list[0].permission
+                }));
+            }
+            if(event == "getUserPerms"){
+                if(data.error){
+                    showToast("Admin Page",data.error);
+                    return;
+                }
+                data.list.forEach(perm=>{
+                    $("#perm-"+perm.toLowerCase()).prop("checked",true);
+                })
+            }
+            if(event == "getUserPerms"){
+                if(data.error){
+                    showToast("Admin Page",data.error);
+                    return;
+                }
+                data.list.forEach(perm=>{
+                    $("#perm-"+perm.toLowerCase()).prop("checked",true);
+                })
+            }
+            if(event == "userModify"){
+                if(data.error){
+                    showToast("Admin Page",data.error);
+                }
+                if(data.changed){
+                    $(".username-display").text("Loading...");
+                    $("#userList").text("Loading...");
+                    ws.send(JSON.stringify({
+                        event: "listUsers"
+                    }));
+                }
+                $("#userModifyForm").find("input, button").prop("disabled",false);
+            }
+            if(event == "userDelete"){
+                if(data.error){
+                    showToast("Admin Page",data.error);
+                }
+                if(data.deleted){
+                    $(".username-display").text("Loading...");
+                    $("#userList").text("Loading...");
+                    ws.send(JSON.stringify({
+                        event: "listUsers"
+                    }));
+                }
+            }
         }
 
         $(function(){
@@ -86,9 +161,16 @@
                 window.location = "./login.html";
             });
             
-            $(`.nav > .nav-link`).on("shown.bs.tab",function(event){
+            $(`.nav > .nav-link`).on("show.bs.tab",function(event){
                 const target = $(event.target).data("bsTarget");
-                
+
+                if(target == "#admin-page"){
+                    $(".username-display").text("Loading...");
+                    $("#userList").text("Loading...");
+                    ws.send(JSON.stringify({
+                        event: "listUsers"
+                    }));
+                }
             });
 
             $("#passwordChangeForm").submit(function (event){
@@ -101,6 +183,42 @@
                     newRepeat: $("#newPw2").val(),
                 };
                 ws.send(JSON.stringify(msg));
+            });
+
+            $("#userList").on('click','.userEntry',function(){
+                $(".username-display").text($(this).find(".entryName").text());
+                $("#userId").val($(this).data("id"));
+                $(".perm-check").prop("checked",false);
+                ws.send(JSON.stringify({
+                    event: "getUserPerms",
+                    list: $(this).data("permission")
+                }));
+            });
+
+            $("#userModifyForm").submit(function(event){
+                event.preventDefault();
+                $(this).find("input, button").prop("disabled",true);
+                let list = [];
+                $(".perm-check").filter((i,elem)=>$(elem).prop("checked")).each((i,elem)=>{
+                    list.push($(elem).prop("id").replace("perm-","").capitalize());
+                });
+                ws.send(JSON.stringify({
+                    event: "userModify",
+                    perms: list,
+                    user: $("#userId").val()
+                }));
+            });
+
+            $("#userDelete").click(function(){
+                if(confirm("Are you sure you want to delete the account of "+$(".username-display").text()+"?")){
+                    ws.send(JSON.stringify({
+                        event: "userDelete",
+                        user: $("#userId").val()
+                    }));
+                }
+            });
+            $(".perm-clear").click(function(){
+                $(".perm-check").prop("checked",false);
             });
         });
     </script>
@@ -207,6 +325,72 @@
                     </div>
                     <div class="tab-pane" id="admin-page">
                         <h1>Admin</h1>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="bg-body-secondary border rounded p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <h2>User list</h2>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center" id="userList">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6" id="UserViewer">
+                                <div class="bg-body-secondary border rounded p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <div class="float-end"><button id="userDelete" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" data-bs-title="Delete user"><i class="bi bi-trash-fill"></i> <span class="hide-sm">Delete</span></button></div>
+                                            <h2 class="username-display">UserName</h2>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <div class="d-flex mb-2">
+                                                <button class="btn btn-link ms-auto p-0 perm-clear">Clear permissions</button>
+                                            </div>
+                                            <form id="userModifyForm" method="POST">
+                                                <input type="hidden" name="userId" id="userId" class="d-none">
+        
+                                                <label class="form-check form-switch px-2 user-select-none" for="perm-play" role='button'>
+                                                    <span class="form-check-label float-start">Control music player</span>
+                                                    <input class="form-check-input perm-check float-end" type="checkbox" role="button" id="perm-play">
+                                                </label>
+        
+                                                <label class="form-check form-switch px-2 user-select-none" role='button'>
+                                                    <span class="form-check-label float-start" for="perm-create">Save music</span>
+                                                    <input class="form-check-input perm-check float-end" type="checkbox" role="button" id="perm-create">
+                                                </label>
+        
+                                                <label class="form-check form-switch px-2 user-select-none" role='button'>
+                                                    <span class="form-check-label float-start" for="perm-delete">Delete saved music</span>
+                                                    <input class="form-check-input perm-check float-end" type="checkbox" role="button" id="perm-delete">
+                                                </label>
+        
+                                                <label class="form-check form-switch px-2 user-select-none" role='button'>
+                                                    <span class="form-check-label float-start" for="perm-edit">Edit saved music</span>
+                                                    <input class="form-check-input perm-check float-end" type="checkbox" role="button" id="perm-edit">
+                                                </label>
+        
+                                                <label class="form-check form-switch px-2 user-select-none" role='button'>
+                                                    <span class="form-check-label float-start" for="perm-login">Web login</span>
+                                                    <input class="form-check-input perm-check float-end" type="checkbox" role="button" id="perm-login">
+                                                </label>
+        
+                                                <label class="form-check form-switch px-2 user-select-none text-danger-emphasis" role='button'>
+                                                    <span class="form-check-label float-start" for="perm-administrator">Administrator</span>
+                                                    <input class="form-check-input perm-check float-end" type="checkbox" role="button" id="perm-administrator">
+                                                </label>
+        
+                                                <button id="userModify" class="btn btn-success w-100 mt-2">Mentés</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

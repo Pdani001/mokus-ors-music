@@ -20,6 +20,18 @@
         }
     </script>
     <script>
+        Array.prototype.asyncEach = function(fn, i){
+            if (this.length <= 0) return;
+            if (i >= this.length) return;
+            if (!i) i = 0;
+            fn(this[i]);
+            let self = this;
+            setTimeout(function(){
+                self.asyncEach(fn, ++i);
+            }, 0);
+        }
+    </script>
+    <script>
         function setRepeatMode(mode){
             switch(mode){
                 case 0:

@@ -20,7 +20,7 @@ module.exports = {
                 ws.send(JSON.stringify({"error":"Invalid authentication."}));
                 return false;
             }
-            if(WSPermissions.hasPermission(User.Permissions,WSPermissions.Play)){
+            if(WSPermissions.has(User.Permissions,WSPermissions.Bits.Play)){
                 if(data.folder == undefined)
                     return false;
                 const [list] = await db.execute("SELECT `info`->'$.url' AS `url` FROM `music_files` WHERE `info`->'$.parent'=? AND `type`='url'",[data.folder]);

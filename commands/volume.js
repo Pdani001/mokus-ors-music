@@ -15,12 +15,12 @@ module.exports = {
         await interaction.deferReply({ephemeral: true});
         const UserID = interaction.member.id;
         const [rows] = await db.execute("SELECT * FROM `music_users` WHERE `user`=?",[UserID]);
-        if(rows.length == 0 || !WSPermissions.hasPermission(BigInt(rows[0]['permission']), WSPermissions.Play)){
+        if(rows.length == 0 || !WSPermissions.has(BigInt(rows[0]['permission']), WSPermissions.Bits.Play)){
             return interaction.followUp({content:`You do not have permission to use this command!`, ephemeral: true});
         }
         
         Global.Volume = interaction.options.getInteger('number', true);
-        if(Global.Volume > 100 && !WSPermissions.hasPermission(BigInt(rows[0]['permission']),WSPermissions.Administrator))
+        if(Global.Volume > 100 && !WSPermissions.has(BigInt(rows[0]['permission']),WSPermissions.Bits.Administrator))
             Global.Volume = 100;
 
         try {

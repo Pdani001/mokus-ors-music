@@ -20,7 +20,7 @@ module.exports = {
 
 		let perms = 0n;
         if(interaction.member.permissions.has(PermissionsBitField.Flags.ModerateMembers,false)){
-            perms = WSPermissions.Play;
+            perms = WSPermissions.Bits.Play;
         }
         if(interaction.member.permissions.has(PermissionsBitField.Flags.Administrator,false)){
             perms = WSPermissions.All;

@@ -20,7 +20,7 @@ module.exports = {
                 ws.send(JSON.stringify({"error":"Invalid authentication"}));
                 return false;
             }
-            if(WSPermissions.hasPermission(User.Permissions,WSPermissions.Edit)){
+            if(WSPermissions.has(User.Permissions,WSPermissions.Bits.Edit)){
                 if(data.id == undefined || data.name == undefined){
                     ws.send(JSON.stringify({"error":"id and name must be set"}));
                     return false;

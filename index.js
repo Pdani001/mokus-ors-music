@@ -107,6 +107,14 @@ client.broadcastWS = (data)=>{
   wss.broadcast(data,"/music");
 }
 wss.broadcast = (data,path)=>{
+  if(path == "*"){
+    Global.WSClients.filter((v,k)=>k!="/auth").each(v => {
+      v.forEach(function each(ws) {
+        ws.send(JSON.stringify(data));
+      });
+    });
+    return;
+  }
   Global.WSClients.get(path).forEach(function each(ws) {
     if(ws.auth){
       ws.send(JSON.stringify(data));

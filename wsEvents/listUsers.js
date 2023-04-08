@@ -1,42 +1,42 @@
 const db = require("../connection.js");
 const { CurrentDate } = require('../util.js');
-const { Global, User } = require("../global.js");
+const { Global } = require("../global.js");
 const jwt = require('jsonwebtoken');
 const { useMasterPlayer } = require("discord-player");
 const { PermissionsBitField } = require("discord.js");
 const WSPermissions = require("../perms.js");
 
 module.exports = {
-	name: "getSettings",
+	name: "listUsers",
     path: "/settings",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
 
-        let user = null;
+        let User;
 
         try {
             const payload = jwt.verify(ws.auth,key);
             const UserID = payload.sub;
-            const [rows] = await db.execute("SELECT * FROM `music_users` WHERE `id`=?",[UserID || ""]);
-            if(rows.length == 0){
+            User = Global.Users.get(UserID);
+            if(User == undefined){
                 throw new Error("User not found");
-            } else {
-                if(!Global.Users.has(UserID)){
-                    user = new User(rows[0]['id'],rows[0]['name'],rows[0]['user'],BigInt(rows[0]['permission']));
-                    Global.Users.set(UserID,user);
-                } else {
-                    user = Global.Users.get(UserID);
-                }
             }
         } catch(err){
             console.error(err);
             ws.send(JSON.stringify({"error":"Invalid authentication"}));
             return false;
         }
+        if(!WSPermissions.has(User.Permissions, WSPermissions.Bits.Administrator)){
+            ws.send(JSON.stringify({event: this.name, error:"You don't have permission to do this"}));
+            return false;
+        }
+
+        const [rows] = await db.execute("SELECT `id`,`name`,`permission` FROM `music_users`");
+
         ws.send(JSON.stringify({
             event: this.name,
-            isAdmin: WSPermissions.has(user.Permissions,WSPermissions.Bits.Administrator)
+            list: rows
         }));
         return true;
 	},

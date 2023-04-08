@@ -21,10 +21,10 @@ module.exports = {
                 ws.send(JSON.stringify({"error":"Invalid authentication"}));
                 return false;
             }
-            const required = data.remove == undefined ? WSPermissions.Create : WSPermissions.Delete;
-            if(WSPermissions.hasPermission(User.Permissions,required)){
+            const required = data.remove == undefined ? WSPermissions.Bits.Create : WSPermissions.Bits.Delete;
+            if(WSPermissions.has(User.Permissions,required)){
                 const now = Math.floor(Date.now() / 1000);
-                if(required == WSPermissions.Delete){
+                if(required == WSPermissions.Bits.Delete){
                     if(Array.isArray(data.remove)){
                         const Remove = [];
                         for(const e of data.remove){

@@ -21,7 +21,7 @@ module.exports = {
                 ws.send(JSON.stringify({"error":"Invalid authentication."}));
                 return false;
             }
-            if(WSPermissions.hasPermission(User.Permissions,WSPermissions.Play)){
+            if(WSPermissions.has(User.Permissions,WSPermissions.Bits.Play)){
                 if(data.at != undefined){
                     if(Global.Queue == null){
                         return false;

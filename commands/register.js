@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, PermissionsBitField } = require('discord.js');
 const db = require("../connection.js");
+const WSPermissions = require('../perms.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -12,17 +13,21 @@ module.exports = {
         const userID = interaction.member.id;
         const [rows] = await db.execute("SELECT * FROM `music_users` WHERE `user`=?",[userID]);
         if(rows.length != 0){
-			const row = new ActionRowBuilder()
+			const button = new ActionRowBuilder()
 			.addComponents(
 				new ButtonBuilder()
 					.setLabel('Login')
 					.setStyle(ButtonStyle.Link)
 					.setURL("https://mokus.pghost.org/"),
 			);
-            return interaction.followUp({content:`You already have an account!`, ephemeral: true, components: [row]});
+            return interaction.followUp({
+				content:`You already have an account!`,
+				ephemeral: true,
+				components: WSPermissions.has(BigInt(rows[0]['permission']),WSPermissions.Bits.Login) ? [button] : []
+			});
         }
 
-		const row = new ActionRowBuilder()
+		const button = new ActionRowBuilder()
 			.addComponents(
 				new ButtonBuilder()
 					.setCustomId('registerButton')
@@ -30,6 +35,6 @@ module.exports = {
 					.setStyle(ButtonStyle.Primary),
 			);
         
-		return interaction.followUp({content:`Click the button to create a new account!`, ephemeral: true, components: [row]});
+		return interaction.followUp({content:`Click the button to create a new account!`, ephemeral: true, components: [button]});
 	},
 };

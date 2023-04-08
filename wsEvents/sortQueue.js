@@ -20,7 +20,7 @@ module.exports = {
                 ws.send(JSON.stringify({"error":"Invalid authentication"}));
                 return false;
             }
-            if(WSPermissions.hasPermission(User.Permissions,WSPermissions.Play)){
+            if(WSPermissions.has(User.Permissions,WSPermissions.Bits.Play)){
                 if(data.oldIndex == undefined || data.newIndex == undefined){
                     ws.send(JSON.stringify({"error":"oldIndex and newIndex must be set!"}));
                     return false;
