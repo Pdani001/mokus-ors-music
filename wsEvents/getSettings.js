@@ -34,9 +34,16 @@ module.exports = {
             ws.send(JSON.stringify({"error":"Invalid authentication"}));
             return false;
         }
+        let nameList = [];
+        for(let perm in WSPermissions.Bits){
+            if(WSPermissions.has(user.Permissions,WSPermissions.Bits[perm],false)){
+                nameList.push(perm);
+            }
+        }
         ws.send(JSON.stringify({
             event: this.name,
-            isAdmin: WSPermissions.has(user.Permissions,WSPermissions.Bits.Administrator)
+            isAdmin: WSPermissions.has(user.Permissions,WSPermissions.Bits.Administrator),
+            permissions: nameList
         }));
         return true;
 	},
