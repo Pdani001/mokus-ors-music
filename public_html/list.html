@@ -108,7 +108,7 @@
             console.log("WebSocket closed:\n", e);
             if(e.code == 1001)
                 return;
-            showToast("WebSocket error","Megszakadt a kapcsolat a WebSocket szerverrel! Újracsatlakozás folyamatban...");
+            showToast("WebSocket error","WebSocket connection terminated! Reconnecting...");
             setInterval(()=>{
                 const ws = new WebSocket("wss://mokus.pghost.org/music", "echo-protocol");
                 ws.onopen = function(e) {
@@ -120,7 +120,7 @@
         }
         ws.onerror = function(e) {
             console.log("WebSocket error:\n", e);
-            showToast("WebSocket error","Hiba lépett fel a WebSocket kapcsolatban!");
+            showToast("WebSocket error","An error occurred in the WebSocket connection!");
         }
         ws.onmessage = function(msg) {
             const data = JSON.parse(msg.data);
@@ -241,6 +241,20 @@
             }
             if(event == "listSaved"){
                 ParentFolder = data.parent;
+                const breadcrumb = $.parseHTML(
+                    `
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                    `
+                    +
+                    (data.parentName != "" ? `<li class="breadcrumb-item"><a href="#" data-parent="${data.parent}">${data.parentName}</a></li>` : '')
+                    +
+                    `
+                            <li class="breadcrumb-item active" aria-current="page">${data.folderName}</li>
+                        </ol>
+                    </nav>
+                    `
+                );
                 $("#saved-page .list-content").html("");
                 let index = 1;
                 const table = $(`<table class="table table-striped table-hover${BulkMode ? " bulk-mode" : ""}"></table>`);
@@ -332,6 +346,7 @@
                     tbody.append(row);
                 });
                 table.append(tbody);
+                $("#saved-page .list-content").append(breadcrumb);
                 if(index > 1){
                     $("#saved-page .list-content").append(table);
                     $("#saved-page .list-content .draggable").draggable({ revert: true, containment: ".page-content", disabled: !BulkMode });
@@ -562,6 +577,16 @@
                 $("#saved-page .list-content").html("");
                 const parent = $($(this).parents(".trackInfo"));
                 CurrentFolder = parent.data("id");
+                window.history.pushState({ "OldFolder": CurrentFolder },"","https://mokus.pghost.org/list.html?folder="+CurrentFolder);
+                ws.send(JSON.stringify({
+                    event: "listSaved",
+                    folder: CurrentFolder
+                }));
+            });
+            $(".list-content").on('click','[data-parent]',function(event){
+                event.preventDefault();
+	            $("#saved-page .list-content").html("");
+                CurrentFolder = $(this).data("parent");
                 window.history.pushState({ "OldFolder": CurrentFolder },"","https://mokus.pghost.org/list.html?folder="+CurrentFolder);
                 ws.send(JSON.stringify({
                     event: "listSaved",

@@ -29,11 +29,26 @@ module.exports = {
                     parent = current[0]['info']['parent'];
                 }
             }
+            const [info] = await db.execute("SELECT `id`,`name` FROM `music_files` WHERE `id`=? OR `id`=?",[folder,parent]);
+            const parentData = info.length > 1 ? info.filter(e=>e.id==parent) : [];
+            let parentName = "";
+            if(parentData.length == 1){
+                parentName = parentData[0]['name'];
+            }
+            const folderData = info.length > 0 ? info.filter(e=>e.id==folder) : [];
+            let folderName = "Home";
+            if(folderData.length == 1){
+                folderName = folderData[0]['name'];
+                if(parentData.length == 0)
+                    parentName = "Home";
+            }
             const [list] = await db.execute("SELECT * FROM `music_files` WHERE `info`->'$.parent'=? ORDER BY `name` ASC",[folder]);
             ws.send(JSON.stringify({
                 event: 'listSaved',
                 saved: list,
-                parent: parent
+                parent: parent,
+                folderName: folderName,
+                parentName: parentName
             }));
         } catch(err){
             ws.send(JSON.stringify({"error":"Invalid authentication"}));
