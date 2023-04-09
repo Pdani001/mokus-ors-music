@@ -413,9 +413,11 @@
             }
             if(event == "sortSaved" || event == "save" || event == "trackEdit"){
                 if(data.error){
-                    alert(data.error);
+                    showToast("Saved music",data.error);
                     return;
                 }
+                if(event == "save" && (!data.saved && !data.remove))
+                    return;
                 ws.send(JSON.stringify({
                     event: "listSaved",
                     folder: CurrentFolder
@@ -1007,7 +1009,7 @@
             <div class="modal-content">
                 <div class="modal-body">
                     <label for="addSavedInput" class="form-label">URLs to add</label>
-                    <textarea name="addSavedInput" id="addSavedInput" class="form-control" style="min-width: 100%; resize: vertical; max-height: 400px; min-height: 100px; white-space: nowrap;"></textarea>
+                    <textarea name="addSavedInput" id="addSavedInput" class="form-control" style="min-width: 100%; resize: vertical; max-height: 400px; min-height: 100px; white-space: pre;"></textarea>
                     <small>One URL per line</small>
                 </div>
                 <div class="modal-footer">

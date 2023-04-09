@@ -44,6 +44,12 @@ module.exports = {
                         return false;
                     }
                     if(!Array.isArray(data.add)){
+                        try {
+                            new URL(data.add);
+                        } catch(err){
+                            ws.send(JSON.stringify({"error":`Invalid url: ${data.add}`}));
+                            return false;
+                        }
                         const results = await useMasterPlayer().search(data.add);
                         await useMasterPlayer().play(channel, results, {
                             nodeOptions: {
@@ -54,6 +60,11 @@ module.exports = {
                     } else {
                         const tracks = [];
                         for(let i = 0; i < data.add.length; i++){
+                            try {
+                                new URL(data.add[i]);
+                            } catch(err){
+                                continue;
+                            }
                             const results = await useMasterPlayer().search(data.add[i]);
                             tracks.push(...results.tracks);
                         }

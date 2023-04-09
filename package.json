@@ -1,6 +1,6 @@
 {
   "name": "mokusors-musicbot",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "dependencies": {
     "@discord-player/extractor": "latest",
     "@discordjs/opus": "latest",

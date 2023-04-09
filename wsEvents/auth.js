@@ -25,7 +25,7 @@ module.exports = {
             ws.send(JSON.stringify({"error":"You don't have permission to login to the web panel"}));
             return false;
         }
-        console.log(`[${CurrentDate(false)}] [WS] ${rows[0]['id']} logged in`);
+        console.log(`[${CurrentDate(false)}] [WS] ${rows[0]['name']} (${rows[0]['id']}) logged in`);
         const key = address + Global.Key;
         const issued = Math.floor(Date.now() / 1000);
         const token = jwt.sign({

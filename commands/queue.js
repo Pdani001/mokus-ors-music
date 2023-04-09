@@ -25,6 +25,12 @@ module.exports = {
         if (!channel) return interaction.followUp('You are not connected to a voice channel!'); // make sure we have a voice channel
         const query = interaction.options.getString('query', true); // we need input/query to play
 
+        try{
+            new URL(query);
+        } catch(e){
+            return interaction.followUp({content:`Invalid link: ${query}`, ephemeral: true});
+        }
+
         try {
             const results = await useMasterPlayer().search(query, { requestedBy: interaction.user });
             const { track, queue } = await useMasterPlayer().play(channel, results, {
