@@ -15,6 +15,7 @@ const player = Player.singleton(client, {
 (async() => {
   await player.extractors.loadDefault(); // This is to load the default extractors from the @discord-player/extractor package
 })();
+
 const { WebSocketServer } = require("ws");
 const { Global } = require("./global.js");
 const { parse } = require("url");
