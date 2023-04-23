@@ -9,7 +9,12 @@ const client = new Client({ intents: [GatewayIntentBits.GuildInvites, GatewayInt
 const deployer = new CommandDeploy();
 const perms = require('./perms.js');
 const { Player } = require('discord-player');
-const player = Player.singleton(client);
+const player = Player.singleton(client, {
+  autoRegisterExtractor: false // This is to prevent the Deprecation Warning
+});
+(async() => {
+  await player.extractors.loadDefault(); // This is to load the default extractors from the @discord-player/extractor package
+})();
 const { WebSocketServer } = require("ws");
 const { Global } = require("./global.js");
 const { parse } = require("url");
