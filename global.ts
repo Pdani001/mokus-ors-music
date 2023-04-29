@@ -1,11 +1,49 @@
 import { GuildQueue, QueueRepeatMode } from "discord-player";
-import { Collection } from 'discord.js';
+import { Collection, ChannelResolvable } from 'discord.js';
 import WebSocket from 'ws';
 
 export class Global {
-    static Volume: Number = 10;
+    /**
+     * @since 0.6.0
+     */
+    static Settings: {
+        Volume: Number;
+        RepeatMode: QueueRepeatMode;
+        DefaultChannel: ChannelResolvable;
+    } = {
+        Volume: 10,
+        RepeatMode: QueueRepeatMode.OFF,
+        DefaultChannel: null
+    };
+    /**
+     * @deprecated will be removed in *0.7.0*
+     * @deprecated use {@link Global.Settings.Volume} instead
+     */
+    static get Volume(): Number {
+        return this.Settings.Volume;
+    }
+    /**
+     * @deprecated will be removed in *0.7.0*
+     * @deprecated use {@link Global.Settings.Volume} instead
+     */
+    static set Volume(value: Number) {
+        this.Settings.Volume = value;
+    }
+    /**
+     * @deprecated will be removed in *0.7.0*
+     * @deprecated use {@link Global.Settings.RepeatMode} instead
+     */
+    static get RepeatMode(): QueueRepeatMode {
+        return this.Settings.RepeatMode;
+    }
+    /**
+     * @deprecated will be removed in *0.7.0*
+     * @deprecated use {@link Global.Settings.RepeatMode} instead
+     */
+    static set RepeatMode(value: QueueRepeatMode) {
+        this.Settings.RepeatMode = value;
+    }
     static Queue: GuildQueue<unknown> = null;
-    static RepeatMode: QueueRepeatMode = QueueRepeatMode.OFF;
     static readonly Key: string = "$tqYqbKQq8s8uD7zY";
     static LastRefresh: {
         music: {

@@ -45,8 +45,8 @@ module.exports = {
             } else {
                 const { track } = await useMasterPlayer().play(channel, results, {
                     nodeOptions: {
-                        volume: Global.Volume,
-                        repeatMode: Global.RepeatMode
+                        volume: Global.Settings.Volume,
+                        repeatMode: Global.Settings.RepeatMode
                     }
                 });
                 current = track;

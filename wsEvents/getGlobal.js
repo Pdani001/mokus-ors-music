@@ -40,8 +40,8 @@ module.exports = {
             }));
             ws.send(JSON.stringify({
                 event: 'getGlobal',
-                volume: Global.Volume,
-                repeat: Global.RepeatMode,
+                volume: Global.Settings.Volume,
+                repeat: Global.Settings.RepeatMode,
                 channels: Channels
             }));
         } catch(err){

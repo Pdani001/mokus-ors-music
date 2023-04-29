@@ -35,13 +35,13 @@ module.exports = {
         try {
             const queue = Global.Queue;
 
-            Global.RepeatMode = mode;
+            Global.Settings.RepeatMode = mode;
             if(queue != null){
-                queue.setRepeatMode(Global.RepeatMode);
+                queue.setRepeatMode(Global.Settings.RepeatMode);
             }
             interaction.client.broadcastWS({
                 event: 'repeatMode',
-                repeat: Global.RepeatMode
+                repeat: Global.Settings.RepeatMode
             });
             const text = mode == 0 ? "Off" : mode == 1 ? "Track" : "Queue";
 

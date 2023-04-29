@@ -25,6 +25,7 @@
         }
     </script>
     <script>
+        let defaultChannel = null;
 
         function showToast(title,message){
             $("#wsToast").find(".toast-body").text(message);
@@ -70,6 +71,26 @@
             if(event == "getSettings"){
                 if(data.isAdmin){
                     $("#admin-nav").removeClass("d-none");
+                    $("#bot-settings").removeClass("d-none");
+                    ws.send(JSON.stringify({
+                        event: "listChannels"
+                    }));
+                    defaultChannel = data.channel;
+                }
+            }
+            if(event == "listChannels"){
+                console.log(data);
+                $("#channel").html("");
+                $("#channel").append(`<option value=""${defaultChannel == null ? " selected" : ""}>no audio</option>`);
+                for (let gId = 0; gId < data.channels.length; gId++) {
+                    const guild = data.channels[gId];
+                    $("#channel").append(`<option value="" disabled="true">${guild.name} (${guild.id})</option>`);
+                    for (let cId = 0; cId < guild.channels.length; cId++) {
+                        const channel = guild.channels[cId];
+                        $("#channel").append(`<option value="${channel.id}" ${defaultChannel == channel.id ? " selected" : ""}> - ${channel.name} (${channel.id})</option>`);
+                    }
+                    if(gId+1 < data.channels.length)
+                        $("#channel").append(`<option value="" disabled="true"></option>`);
                 }
             }
             if(event == "changePassword"){
@@ -79,6 +100,12 @@
                 } else {
                     showToast("Password change",data.error);
                     $("#passwordChangeForm").find("input, button").prop("disabled",false);
+                }
+            }
+            if(event == "changeSettings"){
+                if(data.success){
+                    defaultChannel = $("#channel").val();
+                    $("#settingsChangeForm").find("input, button:not(#settingsChange), select").prop("disabled",false);
                 }
             }
             if(event == "listUsers"){
@@ -155,6 +182,7 @@
         $(function(){
             const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
             const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+            //$("#settingsChange").prop("disabled",true);
 
             $("#logout").click(function(){
                 Cookies.remove("token");
@@ -175,12 +203,28 @@
 
             $("#passwordChangeForm").submit(function (event){
                 event.preventDefault();
-                $("#passwordChangeForm").find("input, button").prop("disabled",true);
+                $(this).find("input, button").prop("disabled",true);
                 const msg = {
                     event: "changePassword",
                     old: $("#oldPw").val(),
                     new: $("#newPw1").val(),
                     newRepeat: $("#newPw2").val(),
+                };
+                ws.send(JSON.stringify(msg));
+            });
+
+            $("#channel").change(function(){
+                const newVal = $(this).val() == "" ? null : $(this).val();
+                console.log(defaultChannel == newVal);
+                $("#settingsChange").prop("disabled",defaultChannel == newVal);
+            });
+            $("#settingsChangeForm").submit(function (event){
+                event.preventDefault();
+                $(this).find("input, button, select").prop("disabled",true);
+                let channel = $("#channel").val() == "" ? null : $("#channel").val();
+                const msg = {
+                    event: "changeSettings",
+                    channel: channel,
                 };
                 ws.send(JSON.stringify(msg));
             });
@@ -297,28 +341,48 @@
         <div class="row">
             <div class="col-md-2 mb-2">
                 <nav class="nav flex-column">
-                    <a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#account-page">Account</a>
+                    <a class="nav-link active" href="#" data-bs-toggle="tab" data-bs-target="#general-page">General</a>
                     <a class="nav-link d-none" href="#" data-bs-toggle="tab" data-bs-target="#admin-page" id="admin-nav">Admin</a>
                 </nav>
             </div>
             <div class="col-md-10">
                 <div class="tab-content">
-                    <div class="tab-pane active" id="account-page">
-                        <h1>Account</h1>
+                    <div class="tab-pane active" id="general-page">
+                        <h1>General</h1>
                         <div class="row">
-                            <div class="col-md-6 col-lg-5 bg-body-secondary border rounded p-3">
-                                <div class="row align-items-center">
-                                    <div class="col text-center">
-                                        <h2>Password change</h2>
+                            <div class="col-md-6">
+                                <div class="bg-body-secondary border rounded p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col text-center">
+                                            <h2>Password change</h2>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center">
+                                        <form class="col" id="passwordChangeForm" method="POST">
+                                            <label for="oldPw">Old password:</label> <input type="password" name="oldPw" id="oldPw" class="form-control">
+                                            <label for="newPw1">New password:</label> <input type="password" name="newPw1" id="newPw1" class="form-control">
+                                            <label for="newPw2">Repeat new password:</label> <input type="password" name="newPw2" id="newPw2" class="form-control">
+                                            <button id="passwordChange" class="btn btn-primary w-100 mt-2">Change</button>
+                                        </form>
                                     </div>
                                 </div>
-                                <div class="row align-items-center">
-                                    <form class="col" id="passwordChangeForm" method="POST">
-                                        <label for="oldPw">Old password:</label> <input type="password" name="oldPw" id="oldPw" class="form-control">
-                                        <label for="newPw1">New password:</label> <input type="password" name="newPw1" id="newPw1" class="form-control">
-                                        <label for="newPw2">Repeat new password:</label> <input type="password" name="newPw2" id="newPw2" class="form-control">
-                                        <button id="passwordChange" class="btn btn-success w-100 mt-2">Save</button>
-                                    </form>
+                            </div>
+                            <div class="col-md-6 d-none" id="bot-settings">
+                                <div class="bg-body-secondary border rounded p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col text-center">
+                                            <h2>Bot settings</h2>
+                                        </div>
+                                    </div>
+                                    <div class="row align-items-center">
+                                        <form class="col" id="settingsChangeForm" method="POST">
+                                            <label for="channel">Default channel:</label>
+                                            <select name="channel" id="channel" class="form-select">
+                                                
+                                            </select>
+                                            <button id="settingsChange" class="btn btn-success w-100 mt-2" disabled="true">Save</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>

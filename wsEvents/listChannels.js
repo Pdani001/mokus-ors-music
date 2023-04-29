@@ -5,7 +5,7 @@ const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
 	name: "listChannels",
-    path: "/music",
+    path: "*",
 	async execute(wss, ws, req, data) {
         const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress);
         const key = address + Global.Key;
@@ -20,7 +20,9 @@ module.exports = {
             }
             let Channels = [];
             await useMasterPlayer().client.guilds.fetch();
-            const Guilds = useMasterPlayer().client.guilds.cache.map(guild => guild);
+            const Guilds = useMasterPlayer().client.guilds.cache.map(guild => guild).sort((a,b)=>{
+                return Number(BigInt(a.id) - BigInt(b.id));
+            });
             await Promise.all(Guilds.map(async guild=>{
                 const allChannels = await guild.channels.fetch();
                 const voices = allChannels.filter(channel => channel != null && channel.isVoiceBased() && channel.permissionsFor(useMasterPlayer().client.user).has(PermissionsBitField.Flags.Connect)).map(channel => { return {name: channel.name, id: channel.id}; });
