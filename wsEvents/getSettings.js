@@ -40,10 +40,15 @@ module.exports = {
                 nameList.push(perm);
             }
         }
+        let channel = Global.Settings.DefaultChannel;
+        if(channel != null && typeof channel !== "string"){
+            channel = channel.id;
+        }
         ws.send(JSON.stringify({
             event: this.name,
             isAdmin: WSPermissions.has(user.Permissions,WSPermissions.Bits.Administrator),
-            permissions: nameList
+            permissions: nameList,
+            channel: channel
         }));
         return true;
 	},

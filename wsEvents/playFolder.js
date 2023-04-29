@@ -26,7 +26,7 @@ module.exports = {
                 const [list] = await db.execute("SELECT `info`->'$.url' AS `url` FROM `music_files` WHERE `info`->'$.parent'=? AND `type`='url'",[data.folder]);
                 if(list.length == 0)
                     return false;
-                let channel = Global.Queue != null ? Global.Queue.channel : data.channel || null;
+                let channel = Global.Queue != null ? Global.Queue.channel : Global.Settings.DefaultChannel;
                 if(channel == null){
                     ws.send(JSON.stringify({"event": "listChannels", "show": true}));
                     return false;
@@ -43,8 +43,8 @@ module.exports = {
                 if(Global.Queue == null){
                     const {queue} = await useMasterPlayer().play(channel, track_chunks[chunk++], {
                         nodeOptions: {
-                            volume: Global.Volume,
-                            repeatMode: Global.RepeatMode
+                            volume: Global.Settings.Volume,
+                            repeatMode: Global.Settings.RepeatMode
                         }
                     });
                     for(let i = chunk; i < track_chunks.length; i++){
@@ -58,7 +58,7 @@ module.exports = {
                     Global.Queue.node.setPaused(false);
                     Global.Queue.setRepeatMode(0);
                     Global.Queue.node.skip();
-                    Global.Queue.setRepeatMode(Global.RepeatMode);
+                    Global.Queue.setRepeatMode(Global.Settings.RepeatMode);
                 }
             } else {
                 ws.send(JSON.stringify({"error":"You do not have permission to do this"}));

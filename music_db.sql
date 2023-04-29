@@ -17,11 +17,6 @@ CREATE TABLE `music_files` (
   `creator` varchar(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `music_settings` (
-  `name` varchar(100) NOT NULL,
-  `value` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
 CREATE TABLE `music_users` (
   `id` varchar(36) NOT NULL COMMENT 'UUID with dashes',
   `name` varchar(72) NOT NULL COMMENT 'login name',
@@ -34,9 +29,6 @@ CREATE TABLE `music_users` (
 ALTER TABLE `music_files`
   ADD PRIMARY KEY (`id`),
   ADD KEY `mf_user` (`creator`);
-
-ALTER TABLE `music_settings`
-  ADD PRIMARY KEY (`name`);
 
 ALTER TABLE `music_users`
   ADD PRIMARY KEY (`id`),

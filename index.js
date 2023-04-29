@@ -293,10 +293,10 @@ function exitHandler(options, exitCode) {
 }
 
 async function quit() {
+  console.log(CurrentDate()+"Saving settings...");
+  const data = JSON.stringify(Global.Settings,null,2);
+  fs.writeFileSync("settings.json",data);
   console.log(CurrentDate()+"Shutting down...");
-  const save_setting = "INSERT INTO `music_settings` (`name`,`value`) VALUES (?,?) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)";
-  await db.execute(save_setting, ['volume',Global.Volume]);
-  await db.execute(save_setting, ['repeat',Global.RepeatMode]);
   client.destroy();
   db.end();
   process.exit();

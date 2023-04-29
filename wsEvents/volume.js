@@ -22,11 +22,11 @@ module.exports = {
             }
             if(WSPermissions.has(User.Permissions,WSPermissions.Bits.Play)){
                 wss.broadcast(data,"/music");
-                Global.Volume = Number(data.volume);
-                if(Global.Volume > 100 && !WSPermissions.has(permissions,WSPermissions.Bits.Administrator))
-                    Global.Volume = 100;
+                Global.Settings.Volume = Number(data.volume);
+                if(Global.Settings.Volume > 100 && !WSPermissions.has(permissions,WSPermissions.Bits.Administrator))
+                    Global.Settings.Volume = 100;
                 if(Global.Queue != null){
-                    Global.Queue.node.setVolume(Global.Volume);
+                    Global.Queue.node.setVolume(Global.Settings.Volume);
                 }
             } else {
                 ws.send(JSON.stringify({"error":"You do not have permission to do this"}));

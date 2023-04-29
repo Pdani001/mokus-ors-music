@@ -22,9 +22,9 @@ module.exports = {
             }
             if(WSPermissions.has(User.Permissions,WSPermissions.Bits.Play)){
                 wss.broadcast(data,"/music");
-                Global.RepeatMode = data.repeat || 0;
+                Global.Settings.RepeatMode = data.repeat || 0;
                 if(Global.Queue != null){
-                    Global.Queue.setRepeatMode(Global.RepeatMode);
+                    Global.Queue.setRepeatMode(Global.Settings.RepeatMode);
                 }
             } else {
                 ws.send(JSON.stringify({"error":"You do not have permission to do this"}));

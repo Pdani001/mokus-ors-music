@@ -35,8 +35,8 @@ module.exports = {
             const results = await useMasterPlayer().search(query, { requestedBy: interaction.user });
             const { track, queue } = await useMasterPlayer().play(channel, results, {
                 nodeOptions: {
-                    volume: Global.Volume,
-                    repeatMode: Global.RepeatMode
+                    volume: Global.Settings.Volume,
+                    repeatMode: Global.Settings.RepeatMode
                 },
                 //searchEngine: QueryType.FILE  //TODO: this.
             });

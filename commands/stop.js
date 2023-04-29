@@ -23,7 +23,6 @@ module.exports = {
             if(Global.Queue == null){
                 return interaction.followUp({content:`I'm not in any voice channels`, ephemeral: true});
             }
-            await Global.Queue.awaitInitialization();
             Global.Queue.setRepeatMode(0);
             Global.Queue.delete();
 

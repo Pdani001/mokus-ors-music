@@ -22,7 +22,6 @@ module.exports = {
             }
             if(WSPermissions.has(User.Permissions,WSPermissions.Bits.Play)){
                 if(Global.Queue != null){
-                    await Global.Queue.awaitInitialization();
                     Global.Queue.setRepeatMode(0);
                     Global.Queue.delete();
                     console.log(`[${CurrentDate(false)}] [WS] Playback stopped by ${UserID}`);

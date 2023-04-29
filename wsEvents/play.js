@@ -44,15 +44,15 @@ module.exports = {
                         Global.Queue.node.jump(results.tracks[0]);
                     }
                 } else {
-                    const channel = Global.Queue != null ? Global.Queue.channel : data.channel || null;
+                    const channel = Global.Queue != null ? Global.Queue.channel : Global.Settings.DefaultChannel;
                     if(channel == null){
                         ws.send(JSON.stringify({"event": "listChannels", "show": true}));
                         return false;
                     }
-                    await useMasterPlayer().play(data.channel, results, {
+                    await useMasterPlayer().play(channel, results, {
                         nodeOptions: {
-                            volume: Global.Volume,
-                            repeatMode: Global.RepeatMode
+                            volume: Global.Settings.Volume,
+                            repeatMode: Global.Settings.RepeatMode
                         }
                     });
                 }

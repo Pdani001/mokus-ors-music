@@ -1,6 +1,6 @@
 {
   "name": "mokusors-musicbot",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "dependencies": {
     "@discord-player/extractor": "latest",
     "@discordjs/opus": "latest",
@@ -14,7 +14,7 @@
     "ffmpeg-static": "latest",
     "jsonwebtoken": "latest",
     "mysql2": "latest",
-    "play-dl": "^1.9.6",
+    "ytdl-core": "latest",
     "utf-8-validate": "latest",
     "uuid": "latest",
     "ws": "latest",

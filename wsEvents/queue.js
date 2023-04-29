@@ -38,7 +38,7 @@ module.exports = {
                     }
                 }
                 if(data.add != undefined){
-                    const channel = Global.Queue != null ? Global.Queue.channel : data.channel || null;
+                    const channel = Global.Queue != null ? Global.Queue.channel : Global.Settings.DefaultChannel;
                     if(channel == null){
                         ws.send(JSON.stringify({"event": "listChannels", "show": true}));
                         return false;
@@ -53,8 +53,8 @@ module.exports = {
                         const results = await useMasterPlayer().search(data.add);
                         await useMasterPlayer().play(channel, results, {
                             nodeOptions: {
-                                volume: Global.Volume,
-                                repeatMode: Global.RepeatMode
+                                volume: Global.Settings.Volume,
+                                repeatMode: Global.Settings.RepeatMode
                             }
                         });
                     } else {
@@ -70,8 +70,8 @@ module.exports = {
                         }
                         await useMasterPlayer().play(channel, tracks, {
                             nodeOptions: {
-                                volume: Global.Volume,
-                                repeatMode: Global.RepeatMode
+                                volume: Global.Settings.Volume,
+                                repeatMode: Global.Settings.RepeatMode
                             }
                         });
                     }

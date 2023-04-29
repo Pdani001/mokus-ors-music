@@ -19,17 +19,17 @@ module.exports = {
             return interaction.followUp({content:`You do not have permission to use this command!`, ephemeral: true});
         }
         
-        Global.Volume = interaction.options.getInteger('number', true);
-        if(Global.Volume > 100 && !WSPermissions.has(BigInt(rows[0]['permission']),WSPermissions.Bits.Administrator))
-            Global.Volume = 100;
+        Global.Settings.Volume = interaction.options.getInteger('number', true);
+        if(Global.Settings.Volume > 100 && !WSPermissions.has(BigInt(rows[0]['permission']),WSPermissions.Bits.Administrator))
+            Global.Settings.Volume = 100;
 
         try {
             if(Global.Queue != null){
-                Global.Queue.node.setVolume(Global.Volume);
+                Global.Queue.node.setVolume(Global.Settings.Volume);
             }
             interaction.client.broadcastWS({
                 event: 'volume',
-                volume: Global.Volume
+                volume: Global.Settings.Volume
             })
 
             return interaction.followUp({content:`Volume set to **${volume}%**`, ephemeral: true});

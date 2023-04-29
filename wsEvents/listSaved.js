@@ -19,7 +19,7 @@ module.exports = {
             }
             ws.send(JSON.stringify({
                 event: 'volume',
-                volume: Global.Volume
+                volume: Global.Settings.Volume
             }));
             const folder = data.folder || "";
             let parent = "";
